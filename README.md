@@ -93,10 +93,9 @@ The application uses RBAC to restrict access:
 If a regular user tries to access admin-only routes, the server returns a `403 Forbidden` error.
 
 POSTMAN:
-<img width="1400" height="645" alt="image" src="https://github.com/user-attachments/assets/fd6c1487-10f0-404e-b847-3846afd03107" />
+
 <img width="1400" height="645" alt="image" src="https://github.com/user-attachments/assets/fd6c1487-10f0-404e-b847-3846afd03107" />
 
-<img width="1215" height="527" alt="image" src="https://github.com/user-attachments/assets/e296f409-e861-4d44-9f7d-d7a9413e1c5b" />
 <img width="1215" height="527" alt="image" src="https://github.com/user-attachments/assets/e296f409-e861-4d44-9f7d-d7a9413e1c5b" />
 
 ---
@@ -142,13 +141,9 @@ All API endpoints were tested using **Postman**:
 ---
 frontend: 
 <img width="1918" height="972" alt="Снимок экрана 2026-02-04 171342" src="https://github.com/user-attachments/assets/adf7d0d2-2a79-4d80-8fd8-16ed86f1c5b6" />
-<img width="1918" height="972" alt="Снимок экрана 2026-02-04 171342" src="https://github.com/user-attachments/assets/adf7d0d2-2a79-4d80-8fd8-16ed86f1c5b6" />
 
 <img width="1919" height="895" alt="Снимок экрана 2026-02-04 171409" src="https://github.com/user-attachments/assets/152c20d6-8195-47fe-966c-8a13266a90c8" />
-<img width="1919" height="895" alt="Снимок экрана 2026-02-04 171409" src="https://github.com/user-attachments/assets/152c20d6-8195-47fe-966c-8a13266a90c8" />
 
-
-<img width="1919" height="968" alt="Снимок экрана 2026-02-04 171422" src="https://github.com/user-attachments/assets/8da1abf3-4be5-4c42-a356-17cd6c2699a7" />
 <img width="1919" height="968" alt="Снимок экрана 2026-02-04 171422" src="https://github.com/user-attachments/assets/8da1abf3-4be5-4c42-a356-17cd6c2699a7" />
 
 ## Conclusion
