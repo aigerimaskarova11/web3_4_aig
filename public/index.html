@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Assignment 4 MUSIC</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fbb7d3;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    input, button, select {
+      padding: 8px;
+      margin: 5px 0;
+      width: 100%;
+    }
+
+    button {
+      background: #e546a0;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    button:hover {
+      background: #b93359;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      padding: 6px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .delete {
+      background: #ee7373;
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+
+    .delete:hover {
+      background: #ed6c6c;
+    }
+
+    .error {
+      color: red;
+      font-size: 14px;
+    }
+
+    .success {
+      color: green;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Assignment 4 MUSIC</h1>
+
+    <!-- LOGIN -->
+    <div class="card">
+      <h2>Login</h2>
+      <input id="email" placeholder="Email" />
+      <input id="password" placeholder="Password" type="password" />
+      <button onclick="login()">Login</button>
+      <p id="loginStatus"></p>
+    </div>
+
+    <!-- ARTISTS -->
+    <div class="card">
+      <h2>Artists</h2>
+      <button onclick="loadArtists()">Load Artists</button>
+      <ul id="artistList"></ul>
+
+      <h3>Admin Only: Create Artist</h3>
+      <input id="artistName" placeholder="Name" />
+      <input id="artistGenre" placeholder="Genre" />
+      <input id="artistYear" placeholder="Debut Year" type="number" />
+      <button onclick="createArtist()">Create Artist</button>
+      <p id="artistMsg"></p>
+    </div>
+
+    <!-- SONGS -->
+    <div class="card">
+      <h2>Songs</h2>
+      <button onclick="loadSongs()">Load Songs</button>
+      <ul id="songList"></ul>
+
+      <h3>Admin Only: Create Song</h3>
+      <input id="songTitle" placeholder="Title" />
+      <input id="songDuration" placeholder="Duration (sec)" type="number" />
+      <select id="songArtist"></select>
+      <button onclick="createSong()">Create Song</button>
+      <p id="songMsg"></p>
+    </div>
+  </div>
+
+  <script>
+    const API = "http://localhost:3000/api";
+
+    function getToken() {
+      return localStorage.getItem("token");
+    }
+
+    function login() {
+      fetch(`${API}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.value,
+          password: password.value
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          loginStatus.innerHTML = "<span class='success'>Logged in successfully</span>";
+        } else {
+          loginStatus.innerHTML = "<span class='error'>Login failed</span>";
+        }
+      });
+    }
+
+    function loadArtists() {
+      fetch(`${API}/artists`)
+        .then(res => res.json())
+        .then(data => {
+          artistList.innerHTML = "";
+          songArtist.innerHTML = "";
+          data.forEach(a => {
+            artistList.innerHTML += `
+              <li>
+                ${a.name} (${a.genre})
+                <button class="delete" onclick="deleteArtist('${a._id}')">Delete</button>
+              </li>`;
+            songArtist.innerHTML += `<option value="${a._id}">${a.name}</option>`;
+          });
+        });
+    }
+
+    function createArtist() {
+      fetch(`${API}/artists`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + getToken()
+        },
+        body: JSON.stringify({
+          name: artistName.value,
+          genre: artistGenre.value,
+          debutYear: artistYear.value
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        artistMsg.innerText = data.error || "Artist created";
+        loadArtists();
+      });
+    }
+
+    function deleteArtist(id) {
+      fetch(`${API}/artists/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": "Bearer " + getToken()
+        }
+      })
+      .then(res => res.json())
+      .then(() => loadArtists());
+    }
+
+    function loadSongs() {
+      fetch(`${API}/songs`)
+        .then(res => res.json())
+        .then(data => {
+          songList.innerHTML = data.map(s =>
+            `<li>${s.title} – ${s.artist.name}</li>`
+          ).join("");
+        });
+    }
+
+    function createSong() {
+      fetch(`${API}/songs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + getToken()
+        },
+        body: JSON.stringify({
+          title: songTitle.value,
+          duration: songDuration.value,
+          artist: songArtist.value
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        songMsg.innerText = data.error || "Song created";
+        loadSongs();
+      });
+    }
+  </script>
+</body>
+</html>
