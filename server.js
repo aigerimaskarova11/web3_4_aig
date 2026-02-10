@@ -21,12 +21,13 @@ app.use("/api/auth", authRoutes);
 
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("*", (req, res) => {
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
