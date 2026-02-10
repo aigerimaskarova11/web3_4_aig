@@ -7,7 +7,7 @@ Music Premium is a full-stack web application where users can view artists and t
 * Users can register and log in.
 * Admins can add and delete artists and songs.
 * Regular users can only view artists and songs.
-* Frontend is responsive with a dark theme and pink artist/song cards.
+* Frontend is responsive with pink artist and song cards.
 
 ---
 
