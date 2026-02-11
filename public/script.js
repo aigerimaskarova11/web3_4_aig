@@ -6,8 +6,7 @@ const role = localStorage.getItem('role');
 let artists = [];
 
 function logout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('role');
+  localStorage.clear();
   window.location.href = 'login.html';
 }
 
@@ -21,82 +20,120 @@ async function loadArtistsAndSongs() {
   artistContainer.innerHTML = '';
 
   artists.forEach(artist => {
-    const artistSongs = allSongs.filter(s => s.artist._id === artist._id);
+
+const artistSongs = allSongs.filter(s =>
+  s.artist &&
+  (typeof s.artist === 'object'
+    ? s.artist._id === artist._id
+    : s.artist === artist._id)
+);
 
     const card = document.createElement('div');
     card.className = 'card';
+
     card.innerHTML = `
+      ${artist.image ? `<img src="${artist.image}" class="artist-img">` : ''}
       <h3>${artist.name}</h3>
       <p>Genre: ${artist.genre}</p>
       <p>Debut: ${artist.debutYear}</p>
-      ${role === 'admin' ? `<button onclick="deleteArtist('${artist._id}')">Delete Artist</button>` : ''}
+
+      ${role === 'admin'
+        ? `<button onclick="deleteArtist('${artist._id}')">Delete Artist</button>`
+        : ''
+      }
+
       <div class="song-list">
         <strong>Songs:</strong>
-        ${artistSongs.map(s => `<p>${s.title} (${s.duration} min) ${role==='admin'?`<button onclick="deleteSong('${s._id}')">Delete</button>`:''}</p>`).join('')}
+        ${
+          artistSongs.length
+            ? artistSongs.map(s => `
+                <div class="song">
+                  <p>
+                    <a href="${s.youtubeUrl}" target="_blank">
+                      ${s.title} (${s.duration} min)
+                    </a>
+                    ${role === 'admin'
+                      ? `<button onclick="deleteSong('${s._id}')">Delete</button>`
+                      : ''
+                    }
+                  </p>
+                </div>
+              `).join('')
+            : '<p>No songs yet</p>'
+        }
       </div>
     `;
+
     artistContainer.appendChild(card);
   });
 
   if (role === 'admin') {
     const songArtistSelect = document.getElementById('songArtist');
     songArtistSelect.innerHTML = '';
+
     artists.forEach(a => {
       const option = document.createElement('option');
       option.value = a._id;
-      option.text = a.name;
+      option.textContent = a.name;
       songArtistSelect.appendChild(option);
     });
+
     adminPanel.style.display = 'block';
   }
 }
 
-// Admin: Add Artist
+// ===== ADMIN =====
 if (role === 'admin') {
-  document.getElementById('addArtistForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('artistName').value;
-    const genre = document.getElementById('artistGenre').value;
-    const debutYear = document.getElementById('artistDebut').value;
 
-    await fetch('/api/artists', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ name, genre, debutYear })
+  document.getElementById('addArtistForm')
+    .addEventListener('submit', async e => {
+      e.preventDefault();
+
+      await fetch('/api/artists', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: artistName.value,
+          genre: artistGenre.value,
+          debutYear: artistDebut.value,
+          image: artistImage?.value
+        })
+      });
+
+      e.target.reset();
+      loadArtistsAndSongs();
     });
 
-    document.getElementById('addArtistForm').reset();
-    loadArtistsAndSongs();
-  });
+  document.getElementById('addSongForm')
+    .addEventListener('submit', async e => {
+      e.preventDefault();
 
-  // Add Song
-  document.getElementById('addSongForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const title = document.getElementById('songTitle').value;
-    const duration = document.getElementById('songDuration').value;
-    const artistId = document.getElementById('songArtist').value;
+      await fetch('/api/songs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: songTitle.value,
+          duration: songDuration.value,
+          artist: songArtist.value,
+          youtubeUrl: songYoutube?.value // <-- здесь YouTube ссылка
+        })
+      });
 
-    await fetch('/api/songs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ title, duration, artist: artistId })
+      e.target.reset();
+      loadArtistsAndSongs();
     });
-
-    document.getElementById('addSongForm').reset();
-    loadArtistsAndSongs();
-  });
 }
 
 async function deleteArtist(id) {
   await fetch(`/api/artists/${id}`, {
     method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` }
   });
   loadArtistsAndSongs();
 }
@@ -104,7 +141,7 @@ async function deleteArtist(id) {
 async function deleteSong(id) {
   await fetch(`/api/songs/${id}`, {
     method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` }
   });
   loadArtistsAndSongs();
 }

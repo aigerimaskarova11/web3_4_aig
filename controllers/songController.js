@@ -1,32 +1,58 @@
 const Song = require("../models/Song");
 
 exports.getAll = async (req, res) => {
-  const songs = await Song.find().populate("artist");
-  res.json(songs);
+  try {
+    const songs = await Song.find()
+      .populate("artist", "name genre debutYear");
+    res.json(songs);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 exports.getOne = async (req, res) => {
-  const song = await Song.findById(req.params.id).populate("artist");
-  if (!song)
-    return res.status(404).json({ message: "Song not found" });
-  res.json(song);
+  try {
+    const song = await Song.findById(req.params.id)
+      .populate("artist", "name genre debutYear");
+
+    if (!song)
+      return res.status(404).json({ message: "Song not found" });
+
+    res.json(song);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 exports.create = async (req, res) => {
-  const song = await Song.create(req.body);
-  res.status(201).json(song);
+  try {
+    const song = await Song.create(req.body);
+    const populatedSong = await song.populate("artist");
+    res.status(201).json(populatedSong);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 };
 
 exports.update = async (req, res) => {
-  const song = await Song.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true }
-  );
-  res.json(song);
+  try {
+    const song = await Song.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    ).populate("artist");
+
+    res.json(song);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 };
 
 exports.delete = async (req, res) => {
-  await Song.findByIdAndDelete(req.params.id);
-  res.json({ message: "Song deleted" });
+  try {
+    await Song.findByIdAndDelete(req.params.id);
+    res.json({ message: "Song deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
